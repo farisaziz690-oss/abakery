@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -38,7 +39,7 @@ export default function LoginPage() {
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-2xl font-bold tracking-tight text-primary">Admin Login</CardTitle>
           <CardDescription>
-            A'Bakery Management System
+            A&apos;Bakery Management System
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -74,9 +75,9 @@ export default function LoginPage() {
             </Button>
           </form>
           <div className="mt-4 text-center">
-            <a href="/" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+            <Link href="/" className="text-sm text-muted-foreground hover:text-primary transition-colors">
               &larr; Kembali ke Beranda
-            </a>
+            </Link>
           </div>
         </CardContent>
       </Card>
