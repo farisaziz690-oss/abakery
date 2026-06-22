@@ -41,6 +41,8 @@ type Order = {
   total_price: number
   status: string
   created_at: string
+  customer_name?: string
+  order_method?: string
 }
 
 // Helper function to generate file paths for uploaded images
@@ -644,6 +646,8 @@ export default function DashboardPage() {
                       <TableHeader>
                         <TableRow className="hover:bg-[#FAF8F5]/50 border-b border-[#E6D5C3]">
                           <TableHead className="font-semibold text-[#5D4037]">Tanggal</TableHead>
+                          <TableHead className="font-semibold text-[#5D4037]">Pemesan</TableHead>
+                          <TableHead className="font-semibold text-[#5D4037]">Metode</TableHead>
                           <TableHead className="font-semibold text-[#5D4037]">Nominal Pendapatan</TableHead>
                           <TableHead className="font-semibold text-[#5D4037]">Status</TableHead>
                           <TableHead className="font-semibold text-[#5D4037] text-right">Aksi</TableHead>
@@ -652,7 +656,7 @@ export default function DashboardPage() {
                       <TableBody>
                         {orders.length === 0 ? (
                           <TableRow>
-                            <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                            <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                               Belum ada catatan penjualan. Klik &quot;Catat Penjualan&quot; untuk memulai.
                             </TableCell>
                           </TableRow>
@@ -660,6 +664,10 @@ export default function DashboardPage() {
                           orders.map((order) => (
                             <TableRow key={order.id} className="hover:bg-[#FAF8F5]/30 border-b border-[#E6D5C3]">
                               <TableCell className="font-medium">{formatDate(order.created_at)}</TableCell>
+                              <TableCell className="font-medium text-[#3E2723]">{order.customer_name || 'Manual (Admin)'}</TableCell>
+                              <TableCell className="capitalize text-sm">
+                                {order.order_method === 'pickup' ? 'Ambil Sendiri' : order.order_method === 'delivery' ? 'Kirim Kurir' : '-'}
+                              </TableCell>
                               <TableCell className="font-semibold text-[#8B5A2B]">
                                 Rp {Number(order.total_price).toLocaleString('id-ID')}
                               </TableCell>

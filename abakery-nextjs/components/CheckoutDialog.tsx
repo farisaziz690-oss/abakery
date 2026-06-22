@@ -6,9 +6,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Calendar, Store, MapPin, Clock, Info } from 'lucide-react'
 import { useCart } from './providers/CartProvider'
+import { createClient } from '@/lib/supabase/client'
 
 export default function CheckoutDialog() {
   const { cart, isCheckoutOpen, setIsCheckoutOpen, setIsCartOpen, clearCart, totalPrice } = useCart()
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const [name, setName] = useState('')
   const [method, setMethod] = useState<'pickup' | 'delivery'>('pickup')
@@ -36,7 +38,7 @@ export default function CheckoutDialog() {
     })
   }
 
-  const handleCheckoutSubmit = (e: React.FormEvent) => {
+  const handleCheckoutSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!name || !date || !time) {
       alert('Mohon lengkapi data pemesanan yang wajib diisi.')
@@ -47,6 +49,8 @@ export default function CheckoutDialog() {
       alert('Mohon isi alamat pengiriman.')
       return
     }
+
+    setIsSubmitting(true)
 
     const formattedDate = formatIndonesianDate(date)
     const methodText = method === 'pickup' ? 'Ambil Sendiri di Toko' : 'Pengiriman Kurir'
@@ -70,6 +74,32 @@ export default function CheckoutDialog() {
     message += `\n💰 *Total Pembayaran:* Rp ${totalPrice.toLocaleString('id-ID')}\n\n`
     message += `Mohon konfirmasi pesanan saya beserta detail pembayarannya. Terima kasih!`
 
+    const supabase = createClient()
+    const orderItems = cart.map(item => ({
+      product_id: item.product.id,
+      name: item.product.name,
+      price: item.product.price,
+      quantity: item.quantity
+    }))
+
+    // Menggabungkan date dan time, mengasumsikan waktu lokal browser
+    const pickupDatetime = new Date(`${date}T${time}:00`).toISOString()
+
+    const { error } = await supabase.from('orders').insert([{
+      total_price: totalPrice,
+      status: 'pending',
+      customer_name: name,
+      order_method: method,
+      items: orderItems,
+      delivery_address: method === 'delivery' ? address : null,
+      pickup_datetime: pickupDatetime
+    }])
+
+    if (error) {
+      console.error("Gagal merekam pesanan ke database:", error)
+      alert("Terjadi kesalahan saat menyimpan pesanan secara otomatis, tetapi Anda tetap akan diarahkan ke WhatsApp untuk konfirmasi manual.")
+    }
+
     const encodedMessage = encodeURIComponent(message)
     const whatsappUrl = `https://wa.me/6289509260222?text=${encodedMessage}`
 
@@ -81,6 +111,7 @@ export default function CheckoutDialog() {
     setDate('')
     setTime('')
     setAddress('')
+    setIsSubmitting(false)
   }
 
   return (
@@ -203,9 +234,10 @@ export default function CheckoutDialog() {
             </Button>
             <Button
               type="submit"
-              className="bg-[#D4A373] hover:bg-[#C28E5E] text-white font-bold transition-all shadow-sm"
+              disabled={isSubmitting}
+              className="bg-[#D4A373] hover:bg-[#C28E5E] text-white font-bold transition-all shadow-sm disabled:opacity-50"
             >
-              Kirim ke WhatsApp
+              {isSubmitting ? 'Memproses...' : 'Kirim ke WhatsApp'}
             </Button>
           </DialogFooter>
         </form>
