@@ -36,6 +36,13 @@ type Product = {
   image_url: string
 }
 
+type OrderItem = {
+  product_id: string
+  name: string
+  price: number
+  quantity: number
+}
+
 type Order = {
   id: string
   total_price: number
@@ -43,6 +50,7 @@ type Order = {
   created_at: string
   customer_name?: string
   order_method?: string
+  items?: OrderItem[]
 }
 
 // Helper function to generate file paths for uploaded images
@@ -647,7 +655,8 @@ export default function DashboardPage() {
                         <TableRow className="hover:bg-[#FAF8F5]/50 border-b border-[#E6D5C3]">
                           <TableHead className="font-semibold text-[#5D4037]">Tanggal</TableHead>
                           <TableHead className="font-semibold text-[#5D4037]">Pemesan</TableHead>
-                          <TableHead className="font-semibold text-[#5D4037]">Metode</TableHead>
+                          <TableHead className="font-semibold text-[#5D4037]">Ambil/Antar</TableHead>
+                          <TableHead className="font-semibold text-[#5D4037]">Menu Dipesan</TableHead>
                           <TableHead className="font-semibold text-[#5D4037]">Nominal Pendapatan</TableHead>
                           <TableHead className="font-semibold text-[#5D4037]">Status</TableHead>
                           <TableHead className="font-semibold text-[#5D4037] text-right">Aksi</TableHead>
@@ -656,7 +665,7 @@ export default function DashboardPage() {
                       <TableBody>
                         {orders.length === 0 ? (
                           <TableRow>
-                            <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                            <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                               Belum ada catatan penjualan. Klik &quot;Catat Penjualan&quot; untuk memulai.
                             </TableCell>
                           </TableRow>
@@ -667,6 +676,22 @@ export default function DashboardPage() {
                               <TableCell className="font-medium text-[#3E2723]">{order.customer_name || 'Manual (Admin)'}</TableCell>
                               <TableCell className="capitalize text-sm">
                                 {order.order_method === 'pickup' ? 'Ambil Sendiri' : order.order_method === 'delivery' ? 'Kirim Kurir' : '-'}
+                              </TableCell>
+                              <TableCell className="text-sm text-[#5D4037]">
+                                {order.items && order.items.length > 0 ? (
+                                  <div className="flex flex-col gap-1">
+                                    <span className="font-semibold text-xs text-[#3E2723]">{order.items.reduce((acc, item) => acc + item.quantity, 0)} Pcs ({order.items.length} Jenis)</span>
+                                    <div className="flex flex-wrap gap-1 max-w-[240px]">
+                                      {order.items.map((item, idx) => (
+                                        <span key={idx} className="inline-flex items-center px-1.5 py-0.5 rounded bg-[#FAF8F5] border border-[#E6D5C3] text-[10px] text-[#5D4037] font-medium whitespace-nowrap">
+                                          {item.quantity}x {item.name}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <span className="text-xs text-muted-foreground italic">Pesanan Manual</span>
+                                )}
                               </TableCell>
                               <TableCell className="font-semibold text-[#8B5A2B]">
                                 Rp {Number(order.total_price).toLocaleString('id-ID')}
